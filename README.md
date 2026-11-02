@@ -150,6 +150,14 @@ validation, and transaction correctness need further review. Read the
 Bug reports, documentation improvements, and focused pull requests are welcome.
 Do not include real wallet material in reports or fixtures.
 
+## Human contribution
+
+The [Human Value Blocks ledger](docs/HUMAN_VALUE_BLOCKS.md) records a provisional
+estimate of **10 VBs ≈ 10 human hours · $1,000 of contributed value**, prepared
+November 1, 2026, covering the original purse development and standalone open
+source preparation. Contributor review is pending. This is recognition of
+human effort and a voluntary gift-support baseline; gifts received are separate.
+
 ## License
 
 [MIT](LICENSE), copyright 2026 Bob and contributors. Dependencies retain their
