@@ -1,0 +1,22 @@
+# Local scratch history; preserve locally, never publish.
+/partial code change - failed to complete/
+
+# OS, editor, and dependency artifacts
+.DS_Store
+._*
+Thumbs.db
+.idea/
+.vscode/
+node_modules/
+coverage/
+*.log
+
+# Local secrets, credentials, and wallet recovery exports
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.orange-purse.json
+/backups/
+/secrets/

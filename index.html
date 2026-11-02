@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#080a15" />
+    <title>Orange Purse · local-first Bitcoin</title>
+    <link rel="stylesheet" href="./purse.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="./index.html" aria-label="Orange Purse home">
+          <span class="brand-mark">₿</span>
+          <span>Orange Purse <small>local-first</small></span>
+        </a>
+        <div class="network-pill" id="network-pill">No purse open</div>
+      </header>
+
+      <section class="hero">
+        <p class="eyebrow">Purse v0.1.5 · Testnet4-first laboratory</p>
+        <h1>Bitcoin, held by you.</h1>
+        <p class="lede">A 1-of-1 local purse for learning the entire flow: create, recover, receive, inspect, and then safely add spending.</p>
+      </section>
+
+      <section class="notice" id="security-notice">
+        <span>✦</span>
+        <p><strong>Use Testnet4 first.</strong> v0.1.5 supports reviewed Testnet4 sends to one or up to 20 native SegWit recipients in a batch, with live fee estimates, change review, and a fresh passkey assertion before local signing. Mainnet remains receive-only.</p>
+      </section>
+
+      <section class="setup-card" id="setup-card">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Your first purse</p>
+            <h2>Create a local encrypted vault</h2>
+          </div>
+          <span class="step">01</span>
+        </div>
+        <form id="create-form" class="form-grid">
+          <label>
+            Purse name
+            <input id="purse-name" autocomplete="off" maxlength="48" placeholder="My Testnet4 purse" required />
+          </label>
+          <label>
+            Network
+            <select id="purse-network">
+              <option value="testnet4" selected>Testnet4 · start here</option>
+              <option value="mainnet">Mainnet · real bitcoin · guarded prototype</option>
+            </select>
+          </label>
+          <p class="network-help wide testnet4" id="network-help"><strong>Testnet4 uses valueless test bitcoin.</strong> Start here to practice creation, recovery, receiving, and later sending.</p>
+          <label class="wide">
+            Create a recovery passphrase
+            <input id="create-passphrase" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters" required />
+            <small>This protects the portable recovery envelope. It is never stored in IndexedDB and is reserved for recovery and encrypted exports.</small>
+          </label>
+          <label class="wide">
+            Confirm passphrase
+            <input id="create-passphrase-confirm" type="password" autocomplete="new-password" minlength="12" placeholder="Type it again" required />
+          </label>
+          <label class="confirm-mainnet wide" id="mainnet-confirm-wrap" hidden>
+            <input id="mainnet-confirm" type="checkbox" />
+            <span>I understand this is a <strong>Mainnet</strong> purse holding real bitcoin, <strong>not Testnet4</strong>. I will export and verify recovery before receiving meaningful funds.</span>
+          </label>
+          <div class="wide actions">
+            <button class="button primary" type="submit" id="create-submit">Create & protect Testnet4 purse <span>→</span></button>
+            <button class="button quiet" type="button" id="open-import">Import encrypted backup</button>
+          </div>
+          <p class="network-help wide"><strong>Next:</strong> create or use your one Orange Purse passkey. It will unlock this and future purses on this browser for everyday use.</p>
+        </form>
+      </section>
+
+      <section class="unlock-card" id="unlock-card" hidden>
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Purse locked</p>
+            <h2 id="unlock-heading">Unlock your purse</h2>
+          </div>
+          <button class="text-button" type="button" id="choose-purse">Choose another</button>
+        </div>
+        <div class="unlock-flow">
+          <div class="passkey-gate unlock-step" id="unlock-passkey-step" hidden>
+            <div class="unlock-step-copy">
+              <span class="unlock-step-number">Passkey unlock</span>
+              <strong>Unlock with your Orange Purse passkey</strong>
+              <p>Your recovery passphrase remains reserved for recovery and encrypted exports.</p>
+            </div>
+            <button class="button secondary" type="button" id="approve-passkey">Unlock with passkey</button>
+          </div>
+          <form id="unlock-form" class="unlock-form" hidden>
+            <div class="unlock-step-copy">
+              <span class="unlock-step-number" id="unlock-passphrase-step">Recovery only</span>
+              <strong>Enter your recovery passphrase</strong>
+              <p id="unlock-passphrase-copy">This decrypts the encrypted purse vault on this device.</p>
+            </div>
+            <div class="unlock-row">
+              <label>
+                Vault passphrase
+                <input id="unlock-passphrase" type="password" autocomplete="current-password" required />
+              </label>
+              <button class="button primary" type="submit">Unlock purse</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="purse-app" id="purse-app" hidden>
+        <nav class="purse-switcher" aria-label="Purse controls">
+          <label>
+            Open purse
+            <select id="purse-select"></select>
+          </label>
+          <button class="button secondary" type="button" id="new-purse">New purse</button>
+          <button class="button quiet" type="button" id="lock-purse">Lock</button>
+        </nav>
+
+        <section class="balance-card">
+          <div>
+            <p class="eyebrow">Confirmed balance</p>
+            <p class="balance" id="confirmed-balance">0 sats</p>
+            <p class="balance-sub" id="mempool-balance">0 sats pending</p>
+          </div>
+          <div class="balance-actions">
+            <button class="button secondary" type="button" id="refresh-chain">↻ Refresh chain</button>
+            <small id="last-refresh">Not checked yet</small>
+          </div>
+        </section>
+
+        <div class="tabs" role="tablist" aria-label="Purse sections">
+          <button class="tab active" role="tab" aria-selected="true" data-tab="receive">Receive</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="activity">Activity</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="send">Send</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="batch">Batch send</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="vault">Vault</button>
+        </div>
+
+        <section class="tab-panel active" id="tab-receive" role="tabpanel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Receive Bitcoin</p>
+              <h2>Fresh native SegWit address</h2>
+            </div>
+            <button class="button primary" type="button" id="new-address">New address</button>
+          </div>
+          <div class="address-card">
+            <div class="address-orb">₿</div>
+            <p class="address-label" id="current-address-label">Address #0</p>
+            <code id="current-address">—</code>
+            <div class="address-controls">
+              <button class="button secondary" type="button" id="copy-address">Copy address</button>
+              <a class="button quiet" id="explore-address" target="_blank" rel="noopener">View in mempool</a>
+            </div>
+          </div>
+          <p class="tip">Each address is derived locally from your encrypted purse. Refreshing checks every address created by this purse.</p>
+          <div class="address-history" id="address-history"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-activity" role="tabpanel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Network activity</p>
+              <h2>Incoming & outgoing transactions</h2>
+            </div>
+            <button class="button secondary" type="button" id="refresh-activity">Refresh</button>
+          </div>
+          <div class="empty-state" id="activity-empty">No on-chain activity has been found for this purse yet.</div>
+          <div class="transaction-list" id="transaction-list"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-send" role="tabpanel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Testnet4 sender</p>
+              <h2>One address, one deliberate transaction</h2>
+            </div>
+          </div>
+          <p class="body-copy">This first sender supports one confirmed-coin transaction to one native SegWit Testnet4 address. Review the exact recipient, amount, fee, selected inputs, and change before your passkey authorizes local signing and broadcast. Mainnet sending is not available.</p>
+          <div class="send-form">
+            <label class="wide">
+              Destination address
+              <input id="send-address" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="tb1q…" />
+            </label>
+            <label>
+              Amount in sats
+              <input id="send-sats" type="number" min="1" step="1" inputmode="numeric" autocomplete="off" placeholder="2500" />
+            </label>
+            <label class="fee-control">
+              Fee preference
+              <select id="send-fee">
+                <option value="economy">Economy</option>
+                <option value="normal" selected>Normal</option>
+                <option value="priority">Priority</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="button primary" type="button" id="review-send">Review Testnet4 transaction</button>
+          </div>
+          <div class="batch-result" id="send-review"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-batch" role="tabpanel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Batch send planner</p>
+              <h2>Prepare destinations before signing</h2>
+            </div>
+            <span class="soon">Signer next</span>
+          </div>
+          <p class="body-copy">Paste one native SegWit Testnet4 destination per line as <code>address, sats</code>. Orange Purse selects confirmed coins locally, shows every destination, fee, and change for review, then requests a fresh passkey assertion before signing one transaction with all outputs.</p>
+          <textarea id="batch-input" spellcheck="false" placeholder="tb1... , 2500&#10;tb1... , 4000"></textarea>
+          <div class="actions">
+            <label class="fee-control">
+              Fee preference
+              <select id="batch-fee">
+                <option value="economy">Economy</option>
+                <option value="normal" selected>Normal</option>
+                <option value="priority">Priority</option>
+              </select>
+            </label>
+            <button class="button primary" type="button" id="validate-batch">Review Testnet4 batch</button>
+          </div>
+          <div class="batch-result" id="batch-result"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-vault" role="tabpanel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Encrypted recovery</p>
+              <h2>Keep your purse recoverable</h2>
+            </div>
+            <span class="vault-badge">1 of 1 local</span>
+          </div>
+          <div class="vault-grid">
+            <article>
+              <h3>Encrypted export</h3>
+              <p>Download this purse’s encrypted vault file. It contains the recovery envelope, never a 12-word phrase or this browser’s passkey.</p>
+              <button class="button primary" type="button" id="export-vault">Download encrypted backup</button>
+            </article>
+            <article>
+              <h3>Shared Orange Purse passkey</h3>
+              <p id="passkey-copy">Set one PRF-capable device passkey. It cryptographically unlocks every purse activated in this browser.</p>
+              <button class="button secondary" type="button" id="register-passkey">Activate shared passkey</button>
+            </article>
+            <article class="danger-zone">
+              <h3>Remove local purse</h3>
+              <p>Erase this encrypted local copy only after verifying an exported backup. Funds can only be recovered with that backup and passphrase.</p>
+              <button class="button danger" type="button" id="delete-purse">Delete local copy</button>
+            </article>
+          </div>
+        </section>
+      </section>
+
+      <dialog id="import-dialog">
+        <form method="dialog" class="dialog-card" id="import-form">
+          <button class="close" value="cancel" aria-label="Close">×</button>
+          <p class="eyebrow">Encrypted recovery</p>
+          <h2>Import a purse backup</h2>
+          <p>Select an encrypted <code>.orange-purse.json</code> file. Its recovery passphrase unlocks it once. Passkey envelopes are intentionally excluded, so activate this browser’s shared passkey afterward for everyday use.</p>
+          <label>
+            Backup file
+            <input id="import-file" type="file" accept="application/json,.json" required />
+          </label>
+          <menu class="actions">
+            <button class="button quiet" value="cancel">Cancel</button>
+            <button class="button primary" type="submit">Import backup</button>
+          </menu>
+        </form>
+      </dialog>
+    </main>
+
+    <div class="toast" id="toast" aria-live="polite"></div>
+    <script type="module" src="./purse.js"></script>
+  </body>
+</html>

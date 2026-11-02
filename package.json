@@ -1,0 +1,14 @@
+{
+  "name": "basic-orange-purse",
+  "version": "0.1.5",
+  "private": true,
+  "description": "Local-first Testnet4 Bitcoin purse laboratory",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node --check purse.js"
+  }
+}
